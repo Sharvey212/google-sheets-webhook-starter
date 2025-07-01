@@ -1,38 +1,17 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const { google } = require("googleapis");
-
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+app.post("/", async (req, res) => {
+  const fetch = (await import('node-fetch')).default;
+  await fetch("https://webhook.site/44d57a5c-bb18-4dde-b606-0bf0a33acc09", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req.body),
+  });
 
-app.post("/webhook", async (req, res) => {
-    try {
-        const { message } = req.body;
-
-        const auth = new google.auth.GoogleAuth({
-            scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-        });
-        const sheets = google.sheets({ version: "v4", auth: await auth.getClient() });
-
-        const spreadsheetId = process.env.SHEET_ID;
-        const range = "Deals!A1";
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId,
-            range,
-            valueInputOption: "RAW",
-            requestBody: {
-                values: [[new Date().toISOString(), message]],
-            },
-        });
-
-        res.status(200).send("Added to sheet");
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Failed");
-    }
+  res.send("Sent to Webhook.site");
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Listening on port ${port}`));
